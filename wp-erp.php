@@ -253,6 +253,7 @@ final class WeDevs_ERP {
         new \WeDevs\ERP\Tracker();
         new \WeDevs\ERP\API\API_Registrar();
         new \WeDevs\ERP\Promotion();
+        new \WeDevs\ERP\AddonTask();
 
         $this->container['modules']     = new \WeDevs\ERP\Framework\Modules();
         $this->container['emailer']     = \WeDevs\ERP\Emailer::init();
