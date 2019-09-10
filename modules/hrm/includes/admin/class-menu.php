@@ -70,7 +70,7 @@ class Admin_Menu {
         ) );
 
         erp_add_menu( 'hr', array(
-            'title'         =>  __( 'Announcement', 'erp' ),
+            'title'         =>  __( 'Announcements', 'erp' ),
             'capability'    =>  'erp_manage_announcement',
             'slug'          =>  'announcement',
             'direct_link'   => admin_url( 'edit.php?post_type=erp_hr_announcement' ),
@@ -83,7 +83,7 @@ class Admin_Menu {
             'capability'    =>  'erp_hr_manager',
             'slug'          =>  'report',
             'callback'      =>  [ $this, 'reporting_page' ],
-            'position'      =>  25,
+            'position'      =>  99,
         ) );
 
         erp_add_submenu( 'hr', 'report', array(
@@ -139,7 +139,7 @@ class Admin_Menu {
             'capability'    =>  'erp_hr_manager',
             'slug'          =>  'help',
             'callback'      =>  [ $this, 'help_page' ],
-            'position'      =>  99,
+            'position'      =>  100,
         ) );
 
         erp_add_menu( 'hr', array(
