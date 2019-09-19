@@ -112,7 +112,8 @@ export default {
             chartAccounts: [],
             ledgers: [],
             temp_ledgers: erp_acct_var.ledgers, /* global erp_acct_var */
-            search : ''
+            search : '',
+            curSymbol: erp_acct_var.symbol || '$'
         };
     },
 
@@ -166,12 +167,16 @@ export default {
             if (val === null && typeof val === 'object') {
                 val = 0;
             }
-            const currency = '$';
-            if (val < 0) {
-                return `Cr. ${currency}${Math.abs(val)}`;
+
+            if (typeof val === 'string') {
+                val = val.split(this.curSymbol)[1];
             }
 
-            return `Dr. ${currency}${val}`;
+            if (val < 0) {
+                return `Cr. ${this.moneyFormat(Math.abs(val))}`;
+            }
+
+            return `Dr. ${this.moneyFormat(val)}`;
         },
 
         onActionClick(action, row, index) {

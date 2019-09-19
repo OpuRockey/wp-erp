@@ -206,7 +206,7 @@ function erp_acct_insert_expense( $data ) {
     $data['updated_by'] = $created_by;
 
     $voucher_no         = null;
-    $currency           = erp_get_option( 'erp_currency', 'erp_settings_general', 'USD' );
+    $currency           = erp_get_currency();
 
     try {
         $wpdb->query( 'START TRANSACTION' );
@@ -284,6 +284,10 @@ function erp_acct_insert_expense( $data ) {
             //Insert into Ledger for source account
             erp_acct_insert_source_expense_data_into_ledger( $expense_data );
         }
+
+        $data['dr'] = 0;
+        $data['cr'] = $expense_data['amount'];
+        erp_acct_insert_data_into_people_trn_details( $data, $voucher_no );
 
         do_action( 'erp_acct_after_expense_create', $expense_data, $voucher_no );
 
@@ -419,10 +423,14 @@ function erp_acct_void_expense( $id ) {
 
     $wpdb->update( $wpdb->prefix . 'erp_acct_expenses',
         array(
-            'status' => 'void',
+            'status' => 8,
         ),
         array( 'voucher_no' => $id )
     );
+
+
+    $wpdb->delete( $wpdb->prefix . 'erp_acct_ledger_details', array( 'trn_no' => $id ) );
+    $wpdb->delete( $wpdb->prefix . 'erp_acct_expense_details', array( 'trn_no' => $id ) );
 }
 
 /**

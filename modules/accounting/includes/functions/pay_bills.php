@@ -111,7 +111,7 @@ function erp_acct_insert_pay_bill( $data ) {
     $data['updated_by'] = $created_by;
 
     $voucher_no = null;
-    $currency      = erp_get_option( 'erp_currency', 'erp_settings_general', 'USD' );
+    $currency      = erp_get_currency();
 
     try {
         $wpdb->query( 'START TRANSACTION' );
@@ -185,6 +185,10 @@ function erp_acct_insert_pay_bill( $data ) {
         if ( isset( $pay_bill_data['trn_by'] ) && $pay_bill_data['trn_by'] === 3 ) {
             erp_acct_insert_check_data( $pay_bill_data );
         }
+
+        $data['dr'] = $pay_bill_data['amount'];
+        $data['cr'] = 0;
+        erp_acct_insert_data_into_people_trn_details( $data, $voucher_no );
 
         do_action( 'erp_acct_after_pay_bill_create', $pay_bill_data, $voucher_no );
 
@@ -322,10 +326,13 @@ function erp_acct_void_pay_bill( $id ) {
 
     $wpdb->update( $wpdb->prefix . 'erp_acct_pay_bill',
         array(
-            'status' => 'void',
+            'status' => 8,
         ),
         array( 'voucher_no' => $id )
     );
+
+    $wpdb->delete( $wpdb->prefix . 'erp_acct_ledger_details', array( 'trn_no' => $id ) );
+    $wpdb->delete( $wpdb->prefix . 'erp_acct_bill_account_details', array( 'bill_no' => $id ) );
 }
 
 /**

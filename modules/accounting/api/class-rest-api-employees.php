@@ -160,25 +160,25 @@ class Employees_Controller extends \WeDevs\ERP\API\REST_Controller {
      * @return WP_Error|WP_REST_Response
      */
     public function get_employee( $request ) {
-        $user_id = (int) $request['id'];
+        $people_id = (int) $request['id'];
+        $user_id   = erp_acct_get_user_id_by_people_id( $people_id );
 
         $employee  = new \WeDevs\ERP\HRM\Employee( $user_id );
-        $people_id = erp_acct_get_people_id_by_user_id( $user_id );
         $item      = (array) erp_get_people( $people_id );
 
         if ( empty( $item['id'] ) ) {
             return new WP_Error( 'rest_employee_invalid_id', __( 'Invalid resource id.' ), [ 'status' => 404 ] );
         }
 
-        $item['designation']  = $employee->get_designation();
-        $item['department']   = $employee->get_department();
-        $item['reporting_to'] = $employee->get_reporting_to();
+        $item['designation']  = $employee->get_designation('view');
+        $item['department']   = $employee->get_department('view');
+        $item['reporting_to'] = $employee->get_reporting_to('view');
         $item['avatar']       = $employee->get_avatar();
 
         $additional_fields['namespace'] = $this->namespace;
         $additional_fields['rest_base'] = $this->rest_base;
 
-        $item     = $this->prepare_item_for_response( $item, $request, $additional_fields );
+        $item     = $this->prepare_employee_item_for_response( $item, $request, $additional_fields );
         $response = rest_ensure_response( $item );
 
         $response->set_status( 200 );
@@ -302,8 +302,7 @@ class Employees_Controller extends \WeDevs\ERP\API\REST_Controller {
      * @return WP_Error|WP_REST_Response
      */
     public function get_transactions( $request ) {
-        $id                = (int) $request['id'];
-        $args['people_id'] = $id;
+        $args['people_id'] = (int) $request['id'];
 
         $transactions = erp_acct_get_people_transactions( $args );
 
@@ -320,14 +319,36 @@ class Employees_Controller extends \WeDevs\ERP\API\REST_Controller {
      * @return mixed|object|\WP_REST_Response
      */
     public function prepare_item_for_response( $item, $request = null, $additional_fields = [] ) {
-        $item = $item->data;
+        $item     = $item->data;
+        $employee = new \WeDevs\ERP\HRM\Employee( $item['user_id'] );
 
-        $data            = array_merge( $item['work'], $item['personal'], $additional_fields );
-        $data['user_id'] = $item['user_id'];
-        $data['email']   = $item['user_email'];
+        $data                = array_merge( $item['work'], $item['personal'], $additional_fields );
+        $data['user_id']     = $item['user_id'];
+        $data['email']       = $item['user_email'];
+        $data['people_id']   = erp_acct_get_people_id_by_user_id( $item['user_id'] );
+        $data['department']  = $employee->get_department( 'view' );
+        $data['designation'] = $employee->get_designation( 'view' );
 
         // Wrap the data in a response object
         $response = rest_ensure_response( $data );
+
+        $response = $this->add_links( $response, $item, $additional_fields );
+
+        return $response;
+    }
+
+    /**
+     * Prepare a single employee output for response
+     *
+     * @param array|object $item
+     * @param \WP_REST_Request|null $request
+     * @param array $additional_fields
+     *
+     * @return mixed|object|\WP_REST_Response
+     */
+    public function prepare_employee_item_for_response( $item, $request = null, $additional_fields = [] ) {
+        // Wrap the data in a response object
+        $response = rest_ensure_response( $item );
 
         $response = $this->add_links( $response, $item, $additional_fields );
 

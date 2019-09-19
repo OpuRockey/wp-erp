@@ -12072,11 +12072,11 @@ var render = function() {
                         "div",
                         {
                           staticClass:
-                            "wperp-form-group wperp-col-sm-6 wperp-col-xs-12"
+                            "wperp-col-sm-6 wperp-col-xs-12 wperp-form-group"
                         },
                         [
-                          _c("label", { attrs: { for: "mobile" } }, [
-                            _vm._v(_vm._s(_vm.__("Mobile", "erp")))
+                          _c("label", { attrs: { for: "phone" } }, [
+                            _vm._v(_vm._s(_vm.__("Phone", "erp")))
                           ]),
                           _vm._v(" "),
                           _c("input", {
@@ -12084,13 +12084,17 @@ var render = function() {
                               {
                                 name: "model",
                                 rawName: "v-model",
-                                value: _vm.peopleFields.mobile,
-                                expression: "peopleFields.mobile"
+                                value: _vm.peopleFields.phone,
+                                expression: "peopleFields.phone"
                               }
                             ],
                             staticClass: "wperp-form-field",
-                            attrs: { type: "tel", id: "mobile" },
-                            domProps: { value: _vm.peopleFields.mobile },
+                            attrs: {
+                              type: "tel",
+                              id: "phone",
+                              placeholder: "(123) 456-789"
+                            },
+                            domProps: { value: _vm.peopleFields.phone },
                             on: {
                               input: function($event) {
                                 if ($event.target.composing) {
@@ -12098,7 +12102,7 @@ var render = function() {
                                 }
                                 _vm.$set(
                                   _vm.peopleFields,
-                                  "mobile",
+                                  "phone",
                                   $event.target.value
                                 )
                               }
@@ -12166,11 +12170,11 @@ var render = function() {
                                 "div",
                                 {
                                   staticClass:
-                                    "wperp-col-sm-6 wperp-col-xs-12 wperp-form-group"
+                                    "wperp-form-group wperp-col-sm-6 wperp-col-xs-12"
                                 },
                                 [
-                                  _c("label", { attrs: { for: "phone" } }, [
-                                    _vm._v(_vm._s(_vm.__("Phone", "erp")))
+                                  _c("label", { attrs: { for: "mobile" } }, [
+                                    _vm._v(_vm._s(_vm.__("Mobile", "erp")))
                                   ]),
                                   _vm._v(" "),
                                   _c("input", {
@@ -12178,17 +12182,15 @@ var render = function() {
                                       {
                                         name: "model",
                                         rawName: "v-model",
-                                        value: _vm.peopleFields.phone,
-                                        expression: "peopleFields.phone"
+                                        value: _vm.peopleFields.mobile,
+                                        expression: "peopleFields.mobile"
                                       }
                                     ],
                                     staticClass: "wperp-form-field",
-                                    attrs: {
-                                      type: "tel",
-                                      id: "phone",
-                                      placeholder: "(123) 456-789"
+                                    attrs: { type: "tel", id: "mobile" },
+                                    domProps: {
+                                      value: _vm.peopleFields.mobile
                                     },
-                                    domProps: { value: _vm.peopleFields.phone },
                                     on: {
                                       input: function($event) {
                                         if ($event.target.composing) {
@@ -12196,7 +12198,7 @@ var render = function() {
                                         }
                                         _vm.$set(
                                           _vm.peopleFields,
-                                          "phone",
+                                          "mobile",
                                           $event.target.value
                                         )
                                       }
@@ -12227,7 +12229,7 @@ var render = function() {
                                     ],
                                     staticClass: "wperp-form-field",
                                     attrs: {
-                                      type: "url",
+                                      type: "text",
                                       id: "website",
                                       placeholder: "www.domain.com"
                                     },
@@ -13669,6 +13671,7 @@ if (false) {(function () {
 //
 //
 //
+//
 
 
 
@@ -13913,9 +13916,6 @@ module.exports = "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFs
         phone: {
           label: 'Phone'
         },
-        expense: {
-          label: 'Expense'
-        },
         actions: {
           label: 'Actions'
         }
@@ -13966,7 +13966,6 @@ module.exports = "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFs
       var items = this.rows;
       items.map(function (item) {
         item.customer = item.first_name + ' ' + item.last_name;
-        item.expense = 0;
       });
       return items;
     }
@@ -14668,6 +14667,9 @@ module.exports = "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFs
         designation: {
           label: 'Designation'
         },
+        department: {
+          label: 'Department'
+        },
         email: {
           label: 'Email'
         },
@@ -14696,7 +14698,7 @@ module.exports = "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFs
       var items = this.rows;
       items.map(function (item) {
         item.employee = item.full_name;
-        item.designation = item.designation.title;
+        item.designation = item.designation;
       });
       return items;
     }
@@ -14896,7 +14898,7 @@ module.exports = "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFs
     fetchItem: function fetchItem(id) {
       var _this2 = this;
 
-      __WEBPACK_IMPORTED_MODULE_0_admin_http__["a" /* default */].get(this.url + '/' + id, {
+      __WEBPACK_IMPORTED_MODULE_0_admin_http__["a" /* default */].get('/employees/' + this.userId, {
         params: {
           include: 'department,designation,reporting_to,avatar'
         }
@@ -15018,6 +15020,19 @@ if (false) {(function () {
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_admin_components_list_table_ListTable_vue__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_admin_components_base_Datepicker_vue__ = __webpack_require__(4);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -17822,7 +17837,8 @@ if (false) {(function () {
       temp_ledgers: erp_acct_var.ledgers,
 
       /* global erp_acct_var */
-      search: ''
+      search: '',
+      curSymbol: erp_acct_var.symbol || '$'
     };
   },
   computed: {
@@ -17878,13 +17894,15 @@ if (false) {(function () {
         val = 0;
       }
 
-      var currency = '$';
-
-      if (val < 0) {
-        return "Cr. ".concat(currency).concat(Math.abs(val));
+      if (typeof val === 'string') {
+        val = val.split(this.curSymbol)[1];
       }
 
-      return "Dr. ".concat(currency).concat(val);
+      if (val < 0) {
+        return "Cr. ".concat(this.moneyFormat(Math.abs(val)));
+      }
+
+      return "Dr. ".concat(this.moneyFormat(val));
     },
     onActionClick: function onActionClick(action, row, index) {
       var _this3 = this;
@@ -22423,9 +22441,6 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
     }
   },
   methods: {
-    newJournal: function newJournal() {
-      this.$router.push('/journals/new');
-    },
     fetchItems: function fetchItems() {
       var _this = this;
 
@@ -24108,6 +24123,7 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 //
 //
 //
+//
 
 
 
@@ -24128,7 +24144,8 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
       showModal: false,
       print_data: null,
       copyLink: '#',
-      user_id: null
+      user_id: null,
+      pdf_link: '#'
     };
   },
   components: {
@@ -24197,9 +24214,10 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
       this.isWorking = true;
       __WEBPACK_IMPORTED_MODULE_0_admin_http__["a" /* default */].get("/invoices/".concat(this.$route.params.id)).then(function (response) {
         _this4.invoice = response.data;
-      }).then(function (e) {}).then(function () {
+      }).then(function () {
         _this4.print_data = _this4.invoice;
         _this4.copyLink = _this4.invoice.readonly_url;
+        _this4.pdf_link = _this4.invoice.pdf_link;
         _this4.isWorking = false;
         _this4.user_id = _this4.print_data.customer_id;
       });
@@ -24210,8 +24228,9 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
       this.isWorking = true;
       __WEBPACK_IMPORTED_MODULE_0_admin_http__["a" /* default */].get("/payments/".concat(this.$route.params.id)).then(function (response) {
         _this5.payment = response.data;
-      }).then(function (e) {}).then(function () {
+      }).then(function () {
         _this5.print_data = _this5.payment;
+        _this5.pdf_link = _this5.payment.pdf_link;
         _this5.user_id = _this5.print_data.customer_id;
         _this5.isWorking = false;
       });
@@ -24931,21 +24950,29 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
               key: 'edit',
               label: 'Edit'
             }];
+          } else if (item.status_code === '8') {
+            item['actions'] = [{
+              key: '#',
+              label: __('No actions found', 'erp')
+            }];
           } else if (item.type === 'invoice') {
             if (item.status_code === '7') {
               delete item['actions'];
             } else if (item.status_code === '2' || item.status_code === '3' || item.status_code === '5') {
               item['actions'] = [{
+                key: 'receive',
+                label: __('Receive Payment', 'erp')
+              }, {
                 key: 'edit',
                 label: __('Edit', 'erp')
               }, {
-                key: 'receive',
-                label: __('Receive Payment', 'erp')
+                key: 'void',
+                label: 'Void'
               }];
             } else {
               item['actions'] = [{
-                key: '#',
-                label: __('No actions found', 'erp')
+                key: 'void',
+                label: 'Void'
               }];
             }
           } else {
@@ -25023,7 +25050,33 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
           });
           break;
 
+        case 'void':
+          if (confirm('Are you sure to void the transaction?')) {
+            if (row.type === 'invoice') {
+              __WEBPACK_IMPORTED_MODULE_0_admin_http__["a" /* default */].post('invoices/' + row.id + '/void').then(function (response) {
+                _this3.showAlert('success', 'Transaction has been void!');
+              }).catch(function (error) {
+                throw error;
+              });
+            }
+
+            if (row.type === 'payment') {
+              __WEBPACK_IMPORTED_MODULE_0_admin_http__["a" /* default */].post('payments/' + row.id + '/void').then(function (response) {
+                _this3.showAlert('success', 'Transaction has been void!');
+              }).then(function () {
+                _this3.$router.push({
+                  name: 'Sales'
+                });
+              }).catch(function (error) {
+                throw error;
+              });
+            }
+          }
+
+          break;
+
         default:
+          break;
       }
     },
     goToPage: function goToPage(page) {
@@ -25638,6 +25691,8 @@ setTimeout(function () {
       });
     },
     onActionClick: function onActionClick(action, row, index) {
+      var _this3 = this;
+
       switch (action) {
         case 'trash':
           // if ( confirm('Are you sure to delete?') ) {
@@ -25648,7 +25703,7 @@ setTimeout(function () {
           break;
 
         case 'edit':
-          if (row.type === 'Expense') {
+          if (row.type === 'expense') {
             this.$router.push({
               name: 'ExpenseEdit',
               params: {
@@ -25657,7 +25712,7 @@ setTimeout(function () {
             });
           }
 
-          if (row.type === 'Bill') {
+          if (row.type === 'bill') {
             this.$router.push({
               name: 'BillEdit',
               params: {
@@ -25666,7 +25721,7 @@ setTimeout(function () {
             });
           }
 
-          if (row.type === 'Check') {
+          if (row.type === 'check') {
             this.$router.push({
               name: 'CheckEdit',
               params: {
@@ -25678,7 +25733,7 @@ setTimeout(function () {
           break;
 
         case 'payment':
-          if (row.type === 'Bill') {
+          if (row.type === 'bill') {
             this.$router.push({
               name: 'PayBillCreate',
               params: {
@@ -25690,7 +25745,41 @@ setTimeout(function () {
 
           break;
 
+        case 'void':
+          if (confirm('Are you sure to void the transaction?')) {
+            if (row.trn_type === 'expense' || row.trn_type === 'check') {
+              __WEBPACK_IMPORTED_MODULE_0_admin_http__["a" /* default */].post('expenses/' + row.id + '/void').then(function (response) {
+                _this3.showAlert('success', 'Transaction has been void!');
+              }).catch(function (error) {
+                throw error;
+              });
+            }
+
+            if (row.trn_type === 'bill') {
+              __WEBPACK_IMPORTED_MODULE_0_admin_http__["a" /* default */].post('bills/' + row.id + '/void').then(function (response) {
+                _this3.showAlert('success', 'Transaction has been void!');
+              }).catch(function (error) {
+                throw error;
+              });
+            }
+
+            if (row.trn_type === 'pay_bill') {
+              __WEBPACK_IMPORTED_MODULE_0_admin_http__["a" /* default */].post('pay-bills/' + row.id + '/void').then(function (response) {
+                _this3.showAlert('success', 'Transaction has been void!');
+              }).then(function () {
+                _this3.$router.push({
+                  name: 'Expenses'
+                });
+              }).catch(function (error) {
+                throw error;
+              });
+            }
+          }
+
+          break;
+
         default:
+          break;
       }
     },
     goToPage: function goToPage(page) {
@@ -25708,7 +25797,7 @@ setTimeout(function () {
   },
   computed: {
     row_items: function row_items() {
-      var _this3 = this;
+      var _this4 = this;
 
       if (!this.rows.length) {
         return this.rows;
@@ -25722,12 +25811,13 @@ setTimeout(function () {
               id: item.id,
               trn_no: item.id,
               type: 'Pay Bill',
+              trn_type: 'pay_bill',
               ref: item.ref ? item.ref : '-',
               vendor_name: item.pay_bill_vendor_name,
               trn_date: item.pay_bill_trn_date,
               due_date: '-',
               due: '-',
-              amount: _this3.formatAmount(item.pay_bill_amount),
+              amount: _this4.formatAmount(item.pay_bill_amount),
               status: item.status,
               singleView: {
                 name: 'PayBillSingle',
@@ -25747,13 +25837,14 @@ setTimeout(function () {
               id: item.id,
               trn_no: item.id,
               type: 'Bill',
+              trn_type: 'bill',
               ref: item.ref ? item.ref : '-',
               vendor_id: item.vendor_id,
               vendor_name: item.vendor_name,
               trn_date: item.bill_trn_date,
               due_date: item.due_date,
-              due: _this3.formatAmount(item.due),
-              amount: _this3.formatAmount(item.amount),
+              due: _this4.formatAmount(item.due),
+              amount: _this4.formatAmount(item.amount),
               status: item.status,
               singleView: {
                 name: 'BillSingle',
@@ -25762,11 +25853,14 @@ setTimeout(function () {
                 }
               },
               actions: [{
+                key: 'payment',
+                label: 'Make Payment'
+              }, {
                 key: 'edit',
                 label: 'Edit'
               }, {
-                key: 'payment',
-                label: 'Make Payment'
+                key: 'void',
+                label: 'Void'
               }]
             };
             break;
@@ -25776,12 +25870,13 @@ setTimeout(function () {
               id: item.id,
               trn_no: item.id,
               type: 'Expense',
+              trn_type: 'expense',
               ref: item.ref ? item.ref : '-',
               vendor_name: item.expense_people_name,
               trn_date: item.expense_trn_date,
               due_date: '-',
               due: '-',
-              amount: _this3.formatAmount(item.expense_amount),
+              amount: _this4.formatAmount(item.expense_amount),
               status: item.status,
               singleView: {
                 name: 'ExpenseSingle',
@@ -25801,12 +25896,13 @@ setTimeout(function () {
               id: item.id,
               trn_no: item.id,
               type: 'Check',
+              trn_type: 'check',
               ref: item.ref ? item.ref : '-',
               vendor_name: item.expense_people_name,
               trn_date: item.expense_people_name,
               due_date: '-',
               due: '-',
-              amount: _this3.formatAmount(item.expense_amount),
+              amount: _this4.formatAmount(item.expense_amount),
               status: item.status,
               singleView: {
                 name: 'CheckSingle',
@@ -25827,11 +25923,14 @@ setTimeout(function () {
 
         if (item.status_code === '2' || item.status_code === '3' || item.status_code === '5') {
           temp['actions'] = [{
+            key: 'payment',
+            label: __('Make Payment', 'erp')
+          }, {
             key: 'edit',
             label: __('Edit', 'erp')
           }, {
-            key: 'payment',
-            label: __('Make Payment', 'erp')
+            key: 'void',
+            label: 'Void'
           }];
         } else {
           temp['actions'] = [{
@@ -26419,21 +26518,29 @@ setTimeout(function () {
               key: 'edit',
               label: 'Edit'
             }];
+          } else if (item.status_code === '8') {
+            item['actions'] = [{
+              key: '#',
+              label: __('No actions found', 'erp')
+            }];
           } else if (item.type === 'purchase') {
             if (item.status_code === '7') {
               delete item['actions'];
             } else if (item.status_code === '2' || item.status_code === '3' || item.status_code === '5') {
               item['actions'] = [{
+                key: 'payment',
+                label: __('Make Payment', 'erp')
+              }, {
                 key: 'edit',
                 label: __('Edit', 'erp')
               }, {
-                key: 'payment',
-                label: __('Make Payment', 'erp')
+                key: 'void',
+                label: 'Void'
               }];
             } else {
               item['actions'] = [{
-                key: '#',
-                label: __('No actions found', 'erp')
+                key: 'void',
+                label: 'Void'
               }];
             }
           } else {
@@ -26497,7 +26604,33 @@ setTimeout(function () {
 
           break;
 
+        case 'void':
+          if (confirm('Are you sure to void the transaction?')) {
+            if (row.type === 'purchase') {
+              __WEBPACK_IMPORTED_MODULE_0_admin_http__["a" /* default */].post('purchases/' + row.id + '/void').then(function (response) {
+                _this3.showAlert('success', 'Transaction has been void!');
+              }).catch(function (error) {
+                throw error;
+              });
+            }
+
+            if (row.type === 'pay_purchase') {
+              __WEBPACK_IMPORTED_MODULE_0_admin_http__["a" /* default */].post('pay-purchases/' + row.id + '/void').then(function (response) {
+                _this3.showAlert('success', 'Transaction has been void!');
+              }).then(function () {
+                _this3.$router.push({
+                  name: 'Purchases'
+                });
+              }).catch(function (error) {
+                throw error;
+              });
+            }
+          }
+
+          break;
+
         default:
+          break;
       }
     },
     goToPage: function goToPage(page) {
@@ -32352,6 +32485,7 @@ var render = function() {
           loader: "spinner",
           color: "#1a9ed4",
           opacity: 0.8,
+          isFullPage: false,
           width: 45
         },
         on: {
@@ -32516,74 +32650,87 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["default"].use(__WEBPACK_IMPORTED_MODULE_1_vue
       }
     },
     children: [{
-      path: '',
+      path: 'product-service',
       name: 'Products',
-      component: __WEBPACK_IMPORTED_MODULE_3_admin_components_products_Products_vue__["a" /* default */]
+      component: __WEBPACK_IMPORTED_MODULE_3_admin_components_products_Products_vue__["a" /* default */],
+      alias: '/products'
     }, {
       path: 'page/:page',
       name: 'PaginateProducts',
       component: __WEBPACK_IMPORTED_MODULE_3_admin_components_products_Products_vue__["a" /* default */]
+    }, {
+      path: 'product-categories',
+      name: 'ProductCategory',
+      component: __WEBPACK_IMPORTED_MODULE_15_admin_components_product_category_ProductCategory_vue__["a" /* default */]
     }]
   }, {
-    path: '/customers',
+    path: '/users',
     component: {
       render: function render(c) {
         return c('router-view');
       }
     },
     children: [{
-      path: '',
-      name: 'Customers',
-      component: __WEBPACK_IMPORTED_MODULE_2_admin_components_people_People_vue__["a" /* default */],
-      alias: '/users'
+      path: 'customers',
+      component: {
+        render: function render(c) {
+          return c('router-view');
+        }
+      },
+      children: [{
+        path: '',
+        name: 'Customers',
+        component: __WEBPACK_IMPORTED_MODULE_2_admin_components_people_People_vue__["a" /* default */],
+        alias: '/users'
+      }, {
+        path: 'page/:page',
+        name: 'PaginateCustomers',
+        component: __WEBPACK_IMPORTED_MODULE_2_admin_components_people_People_vue__["a" /* default */]
+      }, {
+        path: 'view/:id',
+        name: 'CustomerDetails',
+        component: __WEBPACK_IMPORTED_MODULE_10_admin_components_people_PeopleDetails_vue__["a" /* default */]
+      }]
     }, {
-      path: 'page/:page',
-      name: 'PaginateCustomers',
-      component: __WEBPACK_IMPORTED_MODULE_2_admin_components_people_People_vue__["a" /* default */]
+      path: 'vendors',
+      component: {
+        render: function render(c) {
+          return c('router-view');
+        }
+      },
+      children: [{
+        path: '',
+        name: 'Vendors',
+        component: __WEBPACK_IMPORTED_MODULE_2_admin_components_people_People_vue__["a" /* default */]
+      }, {
+        path: 'view/:id',
+        name: 'VendorDetails',
+        component: __WEBPACK_IMPORTED_MODULE_10_admin_components_people_PeopleDetails_vue__["a" /* default */]
+      }, {
+        path: 'page/:page',
+        name: 'PaginateVendors',
+        component: __WEBPACK_IMPORTED_MODULE_2_admin_components_people_People_vue__["a" /* default */]
+      }]
     }, {
-      path: 'view/:id',
-      name: 'CustomerDetails',
-      component: __WEBPACK_IMPORTED_MODULE_10_admin_components_people_PeopleDetails_vue__["a" /* default */]
-    }]
-  }, {
-    path: '/vendors',
-    component: {
-      render: function render(c) {
-        return c('router-view');
-      }
-    },
-    children: [{
-      path: '',
-      name: 'Vendors',
-      component: __WEBPACK_IMPORTED_MODULE_2_admin_components_people_People_vue__["a" /* default */]
-    }, {
-      path: 'view/:id',
-      name: 'VendorDetails',
-      component: __WEBPACK_IMPORTED_MODULE_10_admin_components_people_PeopleDetails_vue__["a" /* default */]
-    }, {
-      path: 'page/:page',
-      name: 'PaginateVendors',
-      component: __WEBPACK_IMPORTED_MODULE_2_admin_components_people_People_vue__["a" /* default */]
-    }]
-  }, {
-    path: '/employees',
-    component: {
-      render: function render(c) {
-        return c('router-view');
-      }
-    },
-    children: [{
-      path: '',
-      name: 'Employees',
-      component: __WEBPACK_IMPORTED_MODULE_4_admin_components_people_Employees_vue__["a" /* default */]
-    }, {
-      path: 'view/:id',
-      name: 'EmployeeDetails',
-      component: __WEBPACK_IMPORTED_MODULE_5_admin_components_people_EmployeeDetails_vue__["a" /* default */]
-    }, {
-      path: 'page/:page',
-      name: 'PaginateEmployees',
-      component: __WEBPACK_IMPORTED_MODULE_4_admin_components_people_Employees_vue__["a" /* default */]
+      path: 'employees',
+      component: {
+        render: function render(c) {
+          return c('router-view');
+        }
+      },
+      children: [{
+        path: '',
+        name: 'Employees',
+        component: __WEBPACK_IMPORTED_MODULE_4_admin_components_people_Employees_vue__["a" /* default */]
+      }, {
+        path: 'view/:id',
+        name: 'EmployeeDetails',
+        component: __WEBPACK_IMPORTED_MODULE_5_admin_components_people_EmployeeDetails_vue__["a" /* default */]
+      }, {
+        path: 'page/:page',
+        name: 'PaginateEmployees',
+        component: __WEBPACK_IMPORTED_MODULE_4_admin_components_people_Employees_vue__["a" /* default */]
+      }]
     }]
   }, {
     path: '/transactions',
@@ -32648,6 +32795,30 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["default"].use(__WEBPACK_IMPORTED_MODULE_1_vue
         name: 'PaginatePurchases',
         component: __WEBPACK_IMPORTED_MODULE_36_admin_components_transactions_purchases_Purchases_vue__["a" /* default */]
       }]
+    }, {
+      path: 'journals',
+      component: {
+        render: function render(c) {
+          return c('router-view');
+        }
+      },
+      children: [{
+        path: '',
+        name: 'Journals',
+        component: __WEBPACK_IMPORTED_MODULE_25_admin_components_journal_JournalList_vue__["a" /* default */]
+      }, {
+        path: 'new',
+        name: 'JournalCreate',
+        component: __WEBPACK_IMPORTED_MODULE_26_admin_components_journal_JournalCreate_vue__["a" /* default */]
+      }, {
+        path: ':id',
+        name: 'JournalSingle',
+        component: __WEBPACK_IMPORTED_MODULE_27_admin_components_journal_JournalSingle_vue__["a" /* default */]
+      }, {
+        path: 'page/:page',
+        name: 'PaginateJournals',
+        component: __WEBPACK_IMPORTED_MODULE_25_admin_components_journal_JournalList_vue__["a" /* default */]
+      }]
     }]
   }, {
     path: '/charts',
@@ -32705,10 +32876,6 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["default"].use(__WEBPACK_IMPORTED_MODULE_1_vue
       name: 'EstimateEdit',
       component: __WEBPACK_IMPORTED_MODULE_11_admin_components_invoice_InvoiceCreate_vue__["a" /* default */]
     }]
-  }, {
-    path: '/product-categories',
-    name: 'ProductCategory',
-    component: __WEBPACK_IMPORTED_MODULE_15_admin_components_product_category_ProductCategory_vue__["a" /* default */]
   }, {
     path: '/payments',
     component: {
@@ -32862,30 +33029,6 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["default"].use(__WEBPACK_IMPORTED_MODULE_1_vue
       component: __WEBPACK_IMPORTED_MODULE_53_admin_components_reports_BalanceSheet_vue__["a" /* default */]
     }]
   }, {
-    path: '/journals',
-    component: {
-      render: function render(c) {
-        return c('router-view');
-      }
-    },
-    children: [{
-      path: '',
-      name: 'Journals',
-      component: __WEBPACK_IMPORTED_MODULE_25_admin_components_journal_JournalList_vue__["a" /* default */]
-    }, {
-      path: '/journals/new',
-      name: 'JournalCreate',
-      component: __WEBPACK_IMPORTED_MODULE_26_admin_components_journal_JournalCreate_vue__["a" /* default */]
-    }, {
-      path: '/journals/:id',
-      name: 'JournalSingle',
-      component: __WEBPACK_IMPORTED_MODULE_27_admin_components_journal_JournalSingle_vue__["a" /* default */]
-    }, {
-      path: 'page/:page',
-      name: 'PaginateJournals',
-      component: __WEBPACK_IMPORTED_MODULE_25_admin_components_journal_JournalList_vue__["a" /* default */]
-    }]
-  }, {
     path: '/taxes',
     component: {
       render: function render(c) {
@@ -32893,9 +33036,10 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["default"].use(__WEBPACK_IMPORTED_MODULE_1_vue
       }
     },
     children: [{
-      path: '',
+      path: 'tax-rates',
       name: 'TaxRates',
-      component: __WEBPACK_IMPORTED_MODULE_45_admin_components_tax_TaxRates_vue__["a" /* default */]
+      component: __WEBPACK_IMPORTED_MODULE_45_admin_components_tax_TaxRates_vue__["a" /* default */],
+      alias: '/taxes'
     }, {
       path: 'new',
       name: 'NewTaxRate',
@@ -32948,26 +33092,26 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["default"].use(__WEBPACK_IMPORTED_MODULE_1_vue
       path: 'agencies/page/:page',
       name: 'PaginateTaxAgencies',
       component: __WEBPACK_IMPORTED_MODULE_42_admin_components_tax_TaxAgencies_vue__["a" /* default */]
-    }]
-  }, {
-    path: '/tax-records',
-    component: {
-      render: function render(c) {
-        return c('router-view');
-      }
-    },
-    children: [{
-      path: '',
-      name: 'TaxRecords',
-      component: __WEBPACK_IMPORTED_MODULE_46_admin_components_tax_TaxRecords_vue__["a" /* default */]
     }, {
-      path: 'page/:page',
-      name: 'PaginateTaxRecords',
-      component: __WEBPACK_IMPORTED_MODULE_46_admin_components_tax_TaxRecords_vue__["a" /* default */]
-    }, {
-      path: ':id',
-      name: 'PayTaxSingle',
-      component: __WEBPACK_IMPORTED_MODULE_47_admin_components_tax_PayTaxSingle_vue__["a" /* default */]
+      path: 'tax-records',
+      component: {
+        render: function render(c) {
+          return c('router-view');
+        }
+      },
+      children: [{
+        path: '',
+        name: 'TaxRecords',
+        component: __WEBPACK_IMPORTED_MODULE_46_admin_components_tax_TaxRecords_vue__["a" /* default */]
+      }, {
+        path: 'page/:page',
+        name: 'PaginateTaxRecords',
+        component: __WEBPACK_IMPORTED_MODULE_46_admin_components_tax_TaxRecords_vue__["a" /* default */]
+      }, {
+        path: ':id',
+        name: 'PayTaxSingle',
+        component: __WEBPACK_IMPORTED_MODULE_47_admin_components_tax_PayTaxSingle_vue__["a" /* default */]
+      }]
     }]
   }, {
     path: '/transfers',
@@ -34127,7 +34271,7 @@ var render = function() {
                     attrs: {
                       to: {
                         name: "EmployeeDetails",
-                        params: { id: data.row.id }
+                        params: { id: data.row.people_id }
                       }
                     }
                   },
@@ -34382,7 +34526,64 @@ var render = function() {
               actions: _vm.actions,
               showCb: false
             },
-            on: { "action:click": _vm.onActionClick }
+            on: { "action:click": _vm.onActionClick },
+            scopedSlots: _vm._u([
+              {
+                key: "voucher_no",
+                fn: function(data) {
+                  return [
+                    _c(
+                      "strong",
+                      [
+                        _c(
+                          "router-link",
+                          {
+                            attrs: {
+                              to: {
+                                name: "DynamicTrnLoader",
+                                params: { id: data.row.voucher_no }
+                              }
+                            }
+                          },
+                          [
+                            data.row.voucher_no
+                              ? _c("span", [
+                                  _vm._v("#" + _vm._s(data.row.voucher_no))
+                                ])
+                              : _vm._e()
+                          ]
+                        )
+                      ],
+                      1
+                    )
+                  ]
+                }
+              },
+              {
+                key: "debit",
+                fn: function(data) {
+                  return [
+                    _vm._v(
+                      "\n                    " +
+                        _vm._s(_vm.moneyFormat(data.row.debit)) +
+                        "\n                "
+                    )
+                  ]
+                }
+              },
+              {
+                key: "credit",
+                fn: function(data) {
+                  return [
+                    _vm._v(
+                      "\n                    " +
+                        _vm._s(_vm.moneyFormat(data.row.credit)) +
+                        "\n                "
+                    )
+                  ]
+                }
+              }
+            ])
           })
         ],
         1
@@ -51122,7 +51323,7 @@ var render = function() {
             on: {
               click: function($event) {
                 $event.preventDefault()
-                return _vm.newJournal($event)
+                return _vm.$router.push("journals/new")
               }
             }
           },
@@ -54075,9 +54276,9 @@ var render = function() {
               "tbody",
               _vm._l(_vm.payment.line_items, function(detail, index) {
                 return _c("tr", { key: index }, [
-                  _c("th", [_vm._v("#" + _vm._s(detail.index))]),
+                  _c("th", [_vm._v("#" + _vm._s(index + 1))]),
                   _vm._v(" "),
-                  _c("th", [_vm._v("#" + _vm._s(detail.invoice_no))]),
+                  _c("th", [_vm._v(_vm._s(detail.invoice_no))]),
                   _vm._v(" "),
                   _c("td", [_vm._v(_vm._s(_vm.moneyFormat(detail.amount)))])
                 ])
@@ -54237,6 +54438,12 @@ var render = function() {
                   _vm._v(" "),
                   _c("template", { slot: "dropdown" }, [
                     _c("ul", { attrs: { role: "menu" } }, [
+                      _c("li", [
+                        _c("a", { attrs: { href: _vm.pdf_link } }, [
+                          _vm._v(_vm._s(_vm.__("Export as PDF", "erp")))
+                        ])
+                      ]),
+                      _vm._v(" "),
                       _c("li", [
                         _c(
                           "a",

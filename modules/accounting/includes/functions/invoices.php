@@ -82,6 +82,7 @@ function erp_acct_get_invoice( $invoice_no ) {
     invoice.attachments,
     invoice.status,
     invoice.particulars,
+    invoice.created_at,
 
     inv_acc_detail.debit,
     inv_acc_detail.credit
@@ -104,6 +105,7 @@ function erp_acct_get_invoice( $invoice_no ) {
 
     $row['attachments'] = unserialize( $row['attachments'] );
     $row['total_due']   = erp_acct_get_invoice_due( $invoice_no );
+    $row['pdf_link']    = erp_acct_pdf_abs_path_to_url( $invoice_no );
 
     return $row;
 }
@@ -171,7 +173,7 @@ function erp_acct_insert_invoice( $data ) {
 
     $voucher_no    = null;
     $estimate_type = $draft = 1;
-    $currency      = erp_get_option( 'erp_currency', 'erp_settings_general', 'USD' );
+    $currency      = erp_get_currency();
 
     try {
         $wpdb->query( 'START TRANSACTION' );
@@ -218,6 +220,10 @@ function erp_acct_insert_invoice( $data ) {
         erp_acct_insert_invoice_data_into_ledger( $invoice_data );
 
         do_action( 'erp_acct_after_sales_create', $data, $voucher_no );
+
+        $data['dr'] = $invoice_data['amount'];
+        $data['cr'] = 0;
+        erp_acct_insert_data_into_people_trn_details( $data, $voucher_no );
 
         $wpdb->query( 'COMMIT' );
 
@@ -385,6 +391,7 @@ function erp_acct_insert_invoice_account_details( $invoice_data, $voucher_no, $c
  * Update invoice data
  *
  * @param $data
+ * @param $invoice_no
  * @return int
  */
 function erp_acct_update_invoice( $data, $invoice_no ) {
@@ -399,7 +406,7 @@ function erp_acct_update_invoice( $data, $invoice_no ) {
     $data['updated_by'] = $user_id;
 
     $estimate_type = $draft = 1;
-    $currency      = erp_get_option( 'erp_currency', 'erp_settings_general', 'USD' );
+    $currency      = erp_get_currency();
 
     try {
         $wpdb->query( 'START TRANSACTION' );
@@ -451,9 +458,13 @@ function erp_acct_update_invoice( $data, $invoice_no ) {
             erp_acct_insert_invoice_data_into_ledger( $old_invoice, $voucher_no, true );
 
             // insert new invoice with edited data
-            erp_acct_insert_invoice( $data );
+            $new_invoice = erp_acct_insert_invoice( $data );
 
             do_action( 'erp_acct_after_sales_update', $data, $voucher_no );
+
+            $data['dr'] = $data['amount'];
+            $data['cr'] = 0;
+            erp_acct_update_data_into_people_trn_details( $data, $old_invoice['voucher_no'] );
 
         }
 
@@ -463,7 +474,7 @@ function erp_acct_update_invoice( $data, $invoice_no ) {
         return new WP_error( 'invoice-exception', $e->getMessage() );
     }
 
-    return erp_acct_get_invoice( $voucher_no );
+    return erp_acct_get_invoice( $new_invoice['voucher_no'] );
 }
 
 /**
@@ -587,10 +598,29 @@ function erp_acct_void_invoice( $invoice_no ) {
 
     $wpdb->update( $wpdb->prefix . 'erp_acct_invoices',
         array(
-            'status' => 'void',
+            'status' => 8,
         ),
         array( 'voucher_no' => $invoice_no )
     );
+
+    $wpdb->delete( $wpdb->prefix . 'erp_acct_ledger_details', array( 'trn_no' => $invoice_no ) );
+    $wpdb->delete( $wpdb->prefix . 'erp_acct_invoice_account_details', array( 'invoice_no' => $invoice_no ) );
+
+    $sql = $wpdb->prepare( "SELECT
+        inv_detail_tax.id
+        FROM {$wpdb->prefix}erp_acct_invoice_details_tax as inv_detail_tax
+        LEFT JOIN {$wpdb->prefix}erp_acct_invoice_details as inv_detail ON inv_detail_tax.invoice_details_id = inv_detail.id
+        LEFT JOIN {$wpdb->prefix}erp_acct_invoices as invoice ON inv_detail.trn_no = invoice.voucher_no
+        WHERE inv_detail.trn_no = %d", $invoice_no );
+
+    $results = $wpdb->get_results( $sql, ARRAY_A );
+
+    foreach ( $results as $result ) {
+        $wpdb->delete( $wpdb->prefix . 'erp_acct_invoice_details_tax', array( 'id' => $result['id'] ) );
+    }
+
+    $wpdb->delete( $wpdb->prefix . 'erp_acct_tax_agency_details', array( 'trn_no' => $invoice_no ) );
+
 }
 
 /**

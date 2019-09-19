@@ -84,6 +84,7 @@ function erp_acct_get_payment( $invoice_no ) {
     $row = $wpdb->get_row( $sql, ARRAY_A );
 
     $row['line_items'] = erp_acct_format_payment_line_items( $invoice_no );
+    $row['pdf_link']   = erp_acct_pdf_abs_path_to_url( $invoice_no );
 
     return $row;
 }
@@ -102,7 +103,7 @@ function erp_acct_insert_payment( $data ) {
     $data['created_at'] = date( "Y-m-d H:i:s" );
     $data['created_by'] = $created_by;
     $voucher_no         = null;
-    $currency           = erp_get_option( 'erp_currency', 'erp_settings_general', 'USD' );
+    $currency           = erp_get_currency();
 
     try {
         $wpdb->query( 'START TRANSACTION' );
@@ -153,6 +154,10 @@ function erp_acct_insert_payment( $data ) {
         if ( isset( $payment_data['trn_by'] ) && $payment_data['trn_by'] === 3 ) {
             erp_acct_insert_check_data( $payment_data );
         }
+
+        $data['dr'] = 0;
+        $data['cr'] = $payment_data['amount'];
+        erp_acct_insert_data_into_people_trn_details( $data, $voucher_no );
 
         do_action( 'erp_acct_after_payment_create', $payment_data, $voucher_no );
 
@@ -413,10 +418,13 @@ function erp_acct_void_payment( $id ) {
 
     $wpdb->update( $wpdb->prefix . 'erp_acct_invoice_receipts',
         array(
-            'status' => 'void',
+            'status' => 8,
         ),
         array( 'voucher_no' => $id )
     );
+
+    $wpdb->delete( $wpdb->prefix . 'erp_acct_ledger_details', array( 'trn_no' => $id ) );
+    $wpdb->delete( $wpdb->prefix . 'erp_acct_invoice_account_details', array( 'invoice_no' => $id ) );
 }
 
 /**

@@ -78,7 +78,7 @@ class Payments_Controller extends \WeDevs\ERP\API\REST_Controller {
 
         register_rest_route( $this->namespace, '/' . $this->rest_base . '/(?P<id>[\d]+)' . '/void', [
             [
-                'methods'             => WP_REST_Server::READABLE,
+                'methods'             => WP_REST_Server::CREATABLE,
                 'callback'            => [ $this, 'void_payment' ],
                 'args'                => [],
                 'permission_callback' => function( $request ) {
@@ -383,6 +383,7 @@ class Payments_Controller extends \WeDevs\ERP\API\REST_Controller {
             'line_items'    => $item->line_items,
             'attachments'   => maybe_unserialize( $item->attachments ),
             'status'        => erp_acct_get_trn_status_by_id( $item->status ),
+            'pdf_link'      => $item->pdf_link,
             'type'          => ! empty( $item->type ) ? $item->type : 'payment',
             'created_at'    => $item->created_at,
         ];

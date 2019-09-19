@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Get all bills
  *
- * @param $data
+ * @param array $args
  * @return mixed
  */
 function erp_acct_get_bills( $args = [] ) {
@@ -83,6 +83,8 @@ function erp_acct_get_bill( $bill_no ) {
 
 /**
  * Format bill line items
+ * @param $voucher_no
+ * @return array|object|null
  */
 function erp_acct_format_bill_line_items( $voucher_no ) {
     global $wpdb;
@@ -121,7 +123,7 @@ function erp_acct_insert_bill( $data ) {
     $data['created_by'] = $created_by;
     $data['updated_at'] = date( 'Y-m-d H:i:s' );
     $data['updated_by'] = $created_by;
-    $currency           = erp_get_option( 'erp_currency', 'erp_settings_general', 'USD' );
+    $currency           = erp_get_currency();
 
     try {
         $wpdb->query( 'START TRANSACTION' );
@@ -174,7 +176,7 @@ function erp_acct_insert_bill( $data ) {
 
         if ( $draft == $bill_data['status'] ) {
             $wpdb->query( 'COMMIT' );
-            return erp_acct_get_invoice( $voucher_no );
+            return erp_acct_get_bill( $voucher_no );
         }
 
         $wpdb->insert( $wpdb->prefix . 'erp_acct_bill_account_details', array(
@@ -187,6 +189,10 @@ function erp_acct_insert_bill( $data ) {
             'created_at'  => $bill_data['created_at'],
             'created_by'  => $bill_data['created_by']
         ) );
+
+        $data['dr'] = 0;
+        $data['cr'] = $bill_data['amount'];
+        erp_acct_insert_data_into_people_trn_details( $data, $voucher_no );
 
         $wpdb->query( 'COMMIT' );
 
@@ -223,7 +229,7 @@ function erp_acct_update_bill( $data, $bill_id ) {
     $data['created_by'] = $user_id;
     $data['updated_at'] = date( 'Y-m-d H:i:s' );
     $data['updated_by'] = $user_id;
-    $currency           = erp_get_option( 'erp_currency', 'erp_settings_general', 'USD' );
+    $currency           = erp_get_currency();
 
     try {
         $wpdb->query( 'START TRANSACTION' );
@@ -294,7 +300,11 @@ function erp_acct_update_bill( $data, $bill_id ) {
             ) );
 
             // insert new bill with edited data
-            erp_acct_insert_bill( $data );
+            $new_bill = erp_acct_insert_bill( $data );
+
+            $data['dr'] = 0;
+            $data['cr'] = $data['amount'];
+            erp_acct_update_data_into_people_trn_details( $data, $old_bill['voucher_no'] );
         }
 
         $wpdb->query( 'COMMIT' );
@@ -303,13 +313,14 @@ function erp_acct_update_bill( $data, $bill_id ) {
         return new WP_error( 'bill-exception', $e->getMessage() );
     }
 
-    return erp_acct_get_bill( $voucher_no );
+    return erp_acct_get_bill( $new_bill['voucher_no'] );
 }
 
 /**
  * Make bill draft on update
  *
- * @param array $bill_data
+ * @param $data
+ * @param $bill_id
  * @return void
  */
 function erp_acct_update_draft_bill( $data, $bill_id ) {
@@ -390,10 +401,13 @@ function erp_acct_void_bill( $id ) {
 
     $wpdb->update( $wpdb->prefix . 'erp_acct_bills',
         array(
-            'status' => 'void',
+            'status' => 8,
         ),
         array( 'voucher_no' => $id )
     );
+
+    $wpdb->delete( $wpdb->prefix . 'erp_acct_ledger_details', array( 'trn_no' => $id ) );
+    $wpdb->delete( $wpdb->prefix . 'erp_acct_bill_account_details', array( 'bill_no' => $id ) );
 }
 
 /**
@@ -515,6 +529,7 @@ function erp_acct_get_bill_count() {
 /**
  * Get bills with due of a people
  *
+ * @param array $args
  * @return mixed
  */
 
