@@ -31,9 +31,9 @@ class Leave_Requests_Controller extends REST_Controller {
                 'methods'             => WP_REST_Server::READABLE,
                 'callback'            => [ $this, 'get_leave_requests' ],
                 'args'                => $this->get_collection_params(),
-                'permission_callback' => function ( $request ) {
+                /*'permission_callback' => function ( $request ) {
                     return current_user_can( 'erp_view_list' );
-                },
+                },*/
             ],
             [
                 'methods'             => WP_REST_Server::CREATABLE,
@@ -68,26 +68,37 @@ class Leave_Requests_Controller extends REST_Controller {
      *
      * @return WP_Error|WP_REST_Response
      */
-    public function get_leave_requests( $request ) {
-        $args = [
-            'number' => $request['per_page'],
-            'offset' => ( $request['per_page'] * ( $request['page'] - 1 ) ),
-            'type'   => $request['type'] == 'upcoming' ? 'upcoming' : ''
-        ];
+    public function get_leave_requests( \WP_REST_Request $request ) {
 
-        $items = [];
-        $formatted_items = [];
-        $total = 0;
+        $per_page       = $request->get_param( 'per_page' );
+        $page           = $request->get_param( 'page' );
+        $status         = $request->get_param( 'status' );
+        $filter_year    = $request->get_param( 'filter_year' );
+        $orderby        = $request->get_param( 'orderby' );
+        $order          = $request->get_param( 'order' );
+        $search         = $request->get_param( 's' );
 
-        if ( $args['type'] == 'upcoming' ) {
-            $args['status']     = 1; // only approved leave request
-            $args['start_date'] = erp_current_datetime()->setTime(0, 0)->getTimestamp(); //today
-            $args['end_date']   = erp_current_datetime()->modify( 'last day of next month' )->setTime( 23, 59, 59 )->getTimestamp();
+        // get current year as default f_year
+        $f_year = erp_hr_get_financial_year_from_date();
+        $f_year = ! empty( $f_year ) ? $f_year->id : '';
+
+        $args = array(
+            'offset'  => ( $per_page * ( $page - 1 ) ),
+            'number'  => $per_page,
+            'status'  => $status,
+            'f_year'  => isset( $filter_year ) ? $filter_year : $f_year,
+            'orderby' => isset( $orderby ) ? $orderby : 'created_at',
+            'order'   => isset( $order ) ? $order : 'DESC',
+            's'       => isset( $search ) ? $search : ''
+        );
+
+        if ( erp_hr_is_current_user_dept_lead() && ! current_user_can( 'erp_leave_manage' ) ) {
+            $args['lead'] = get_current_user_id();
         }
 
         $leave_requests = erp_hr_get_leave_requests( $args );
-        $items = $leave_requests['data'];
-        $total = $leave_requests['total'];
+        $items          = $leave_requests['data'];
+        $total          = $leave_requests['total'];
 
         $formatted_items = [];
         foreach( $items as $item ) {
@@ -99,6 +110,7 @@ class Leave_Requests_Controller extends REST_Controller {
         $response = $this->format_collection_response( $response, $request, $total );
 
         return $response;
+
     }
 
     /**
@@ -203,37 +215,28 @@ class Leave_Requests_Controller extends REST_Controller {
         $employee = new Employee($item->user_id);
 
         $data = [
-            'id'            => (int) $item->id,
-            'user_id'       => (int) $item->user_id,
-            'employee_id'   => (int) $employee->employee_id,
-            'employee_name' => $employee->display_name,
-            'avatar_url'    => $employee->get_avatar_url(80),
-            'start_date'    => erp_format_date( $item->start_date, 'Y-m-d' ),
-            'end_date'      => erp_format_date( $item->end_date, 'Y-m-d' ),
-            'reason'        => $item->reason,
-            'comments'      => isset( $item->comments ) ? $item->comments : '',
+            'id'                   => (int)$item->id,
+            'user_id'              => (int)$item->user_id,
+            'employee_id'          => (int)$employee->employee_id,
+            'employee_name'        => $employee->display_name,
+            'display_name'         => $item->display_name,
+            'employee_designation' => $employee->get_designation('view'),
+            'policy_name'          => $item->policy_name,
+            'avatar_url'           => $employee->get_avatar_url(80),
+            'start_date'           => erp_format_date($item->start_date, 'Y-m-d'),
+            'end_date'             => erp_format_date($item->end_date, 'Y-m-d'),
+            'reason'               => $item->reason,
+            'message'              => $item->message,
+            'leave_id'             => $item->leave_id,
+            'days'                 => $item->days,
+            'available'            => $item->available,
+            'spent'                => $item->spent
         ];
-
-        if ( isset( $request['include'] ) ) {
-            $include_params = explode( ',', str_replace( ' ', '', $request['include'] ) );
-
-            if ( in_array( 'policy', $include_params ) ) {
-                $policies_controller = new Leave_Policies_Controller();
-
-                $policy_id  = (int) $item->policy_id;
-                $data['policy'] = null;
-
-                if ( $policy_id ) {
-                    $policy = $policies_controller->get_policy( ['id' => $policy_id ] );
-                    $data['policy'] = ! is_wp_error( $policy ) ? $policy->get_data() : null;
-                }
-            }
-        }
 
         $data = array_merge( $data, $additional_fields );
 
         // Wrap the data in a response object
-        $response = rest_ensure_response( $data );
+        $response = rest_ensure_response( apply_filters( 'filter_leave_request', $data, $request ) );
 
         $response = $this->add_links( $response, $item );
 
