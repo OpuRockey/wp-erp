@@ -59,6 +59,25 @@ class Leave_Requests_Controller extends REST_Controller {
             ],
             'schema' => [ $this, 'get_public_item_schema' ],
         ] );
+
+
+
+        register_rest_route( $this->namespace, '/' . $this->rest_base . '/action', [
+            [
+                'methods'             => WP_REST_Server::CREATABLE,
+                'callback'            => [ $this, 'leave_request_action' ],
+                'args'                => $this->get_endpoint_args_for_item_schema( WP_REST_Server::CREATABLE ),
+                /*'permission_callback' => function ( $request ) {
+                    return current_user_can( 'erp_list_employee' );
+                },*/
+            ],
+            'schema' => [ $this, 'get_public_item_schema' ],
+        ] );
+
+
+
+
+
     }
 
     /**
@@ -163,6 +182,48 @@ class Leave_Requests_Controller extends REST_Controller {
         return $response;
     }
 
+
+    /**
+     * Approve OR Reject leave requests
+     *
+     * @param WP_REST_Request $request
+     *
+     * @return WP_Error|WP_REST_Response
+     */
+    public function leave_request_action( \WP_REST_Request $request ) {
+
+        $id         = $request->get_param( 'id' );
+        $reason     = $request->get_param( 'reason' );
+        $type       = $request->get_param( 'type' );
+
+        if ( isset( $id ) && ! empty( $id ) ) {
+            switch ( $type ) {
+                case 'approved':
+                    $status = 1;
+                    break;
+
+                case 'pending':
+                    $status = 2;
+                    break;
+
+                case 'rejected':
+                    $status = 3;
+                    break;
+
+                case 'forwarded':
+                    $status = 4;
+                    break;
+
+                default:
+                    $status = 3;
+                    break;
+            }
+            $response = erp_hr_leave_request_update_status( $id, $status, $reason );
+            return rest_ensure_response( $response );
+        }
+    }
+
+
     /**
      * Prepare a single item for create or update
      *
@@ -241,66 +302,5 @@ class Leave_Requests_Controller extends REST_Controller {
         $response = $this->add_links( $response, $item );
 
         return $response;
-    }
-
-    /**
-     * Get the User's schema, conforming to JSON Schema
-     *
-     * @return array
-     */
-    public function get_item_schema() {
-        $schema = [
-            '$schema'    => 'http://json-schema.org/draft-04/schema#',
-            'title'      => 'request',
-            'type'       => 'object',
-            'properties' => [
-                'id'          => [
-                    'description' => __( 'Unique identifier for the resource.' ),
-                    'type'        => 'integer',
-                    'context'     => [ 'embed', 'view', 'edit' ],
-                    'readonly'    => true,
-                ],
-                'employee_id' => [
-                    'description' => __( 'Employee id for the resource.' ),
-                    'type'        => 'integer',
-                    'context'     => [ 'edit' ],
-                    'required'    => true,
-                ],
-                'policy'      => [
-                    'description' => __( 'Employee id for the resource.' ),
-                    'type'        => 'integer',
-                    'context'     => [ 'edit' ],
-                    'required'    => true,
-                ],
-                'start_date'  => [
-                    'description' => __( 'Start date for the resource.' ),
-                    'type'        => 'string',
-                    'context'     => [ 'edit' ],
-                    'arg_options' => [
-                        'sanitize_callback' => 'sanitize_text_field',
-                    ],
-                    'required'    => true,
-                ],
-                'end_date'    => [
-                    'description' => __( 'End date for the resource.' ),
-                    'type'        => 'string',
-                    'context'     => [ 'edit' ],
-                    'arg_options' => [
-                        'sanitize_callback' => 'sanitize_text_field',
-                    ],
-                    'required'    => true,
-                ],
-                'reason'     => [
-                    'description' => __( 'Reason for the resource.' ),
-                    'type'        => 'string',
-                    'context'     => [ 'edit' ],
-                    'arg_options' => [
-                        'sanitize_callback' => 'sanitize_text_field',
-                    ],
-                ],
-            ],
-        ];
-
-        return $schema;
     }
 }
