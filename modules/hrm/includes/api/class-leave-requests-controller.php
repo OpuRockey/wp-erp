@@ -39,9 +39,9 @@ class Leave_Requests_Controller extends REST_Controller {
                 'methods'             => WP_REST_Server::CREATABLE,
                 'callback'            => [ $this, 'create_leave_request' ],
                 'args'                => $this->get_endpoint_args_for_item_schema( WP_REST_Server::CREATABLE ),
-                'permission_callback' => function ( $request ) {
+               /* 'permission_callback' => function ( $request ) {
                     return current_user_can( 'erp_leave_manage' );
-                },
+                },*/
             ],
             'schema' => [ $this, 'get_public_item_schema' ],
         ] );
@@ -160,26 +160,23 @@ class Leave_Requests_Controller extends REST_Controller {
      *
      * @return WP_Error|WP_REST_Request
      */
-    public function create_leave_request( $request ) {
-        $item = $this->prepare_item_for_database( $request->get_body_params() );
-        $data = $request->get_body_params();
+    public function create_leave_request( \WP_REST_Request $request ) {
+        $employee_id     = $request->get_param( 'employee_id' );
+        $leave_policy    = $request->get_param( 'leave_policy' );
+        $leave_from      = $request->get_param( 'leave_from' );
+        $leave_to        = $request->get_param( 'leave_to' );
+        $leave_reason    = $request->get_param( 'leave_reason' );
 
-        $policies = erp_hr_get_assign_policy_from_entitlement( $data['employee_id'] );
-        if ( ! $policies ) {
-            return new WP_Error( 'rest_leave_request_required_entitlement', __( 'Set entitlement to the employee first.' ), [ 'status' => 400 ] );
-        }
+        $response = erp_hr_leave_insert_request( array(
+            'user_id'      => $employee_id,
+            'leave_policy' => $leave_policy,
+            'start_date'   => $leave_from,
+            'end_date'     => $leave_to,
+            'reason'       => $leave_reason
+        ) );
 
-        $id            = erp_hr_leave_insert_request( $item );
-        $leave_request = erp_hr_get_leave_request( $id );
-
-        $request->set_param( 'context', 'edit' );
-
-        $response = $this->prepare_item_for_response( $leave_request, $data );
-        $response = rest_ensure_response( $response );
-        $response->set_status( 201 );
-        $response->header( 'Location', rest_url( sprintf( '/%s/%s/%d', $this->namespace, $this->rest_base, $id ) ) );
-
-        return $response;
+        $item     = $this->prepare_item_for_response( $response, $request );
+        return rest_ensure_response( $item );
     }
 
 
