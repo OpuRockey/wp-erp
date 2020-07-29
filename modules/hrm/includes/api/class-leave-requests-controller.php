@@ -72,30 +72,6 @@ class Leave_Requests_Controller extends REST_Controller {
             'schema' => [ $this, 'get_public_item_schema' ],
         ] );
 
-        register_rest_route( $this->namespace, '/' . $this->rest_base . '/leave-entitlements', [
-            [
-                'methods'             => WP_REST_Server::READABLE,
-                'callback'            => [ $this, 'get_leave_entitlements' ],
-                'args'                => $this->get_collection_params(),
-                /*'permission_callback' => function ( $request ) {
-                    return current_user_can( 'erp_view_list' );
-                },*/
-            ],
-            [
-                'methods'             => WP_REST_Server::CREATABLE,
-                'callback'            => [ $this, 'create_leave_entitlements' ],
-                'args'                => $this->get_endpoint_args_for_item_schema( WP_REST_Server::CREATABLE ),
-                /* 'permission_callback' => function ( $request ) {
-                     return current_user_can( 'erp_leave_manage' );
-                 },*/
-            ],
-            'schema' => [ $this, 'get_public_item_schema' ],
-        ] );
-
-
-
-
-
     }
 
     /**
@@ -236,42 +212,6 @@ class Leave_Requests_Controller extends REST_Controller {
             $response = erp_hr_leave_request_update_status( $id, $status, $reason );
             return rest_ensure_response( $response );
         }
-    }
-
-    /**
-     * Get all leave entitlements
-     *
-     * @param WP_REST_Request $request
-     *
-     * @return WP_Error|WP_REST_Response
-     */
-    public function get_leave_entitlements ( \WP_REST_Request $request ) {
-
-
-        $per_page       = $request->get_param( 'per_page' );
-        $page           = $request->get_param( 'page' );
-        $search         = $request->get_param( 'search' );
-        $emp_status     = $request->get_param( 'emp_status' );
-        $orderby        = $request->get_param( 'orderby' );
-        $order          = $request->get_param( 'order' );
-        $year           = $request->get_param( 'year' );
-        $policy_id      = $request->get_param( 'policy_id' );
-
-        $args = array(
-            'offset'     => ( $per_page * ($page - 1 ) ),
-            'number'     => $per_page,
-            'emp_status' => isset( $emp_status ) ? $emp_status : 'active',
-            'orderby'    => isset( $orderby ) ? $orderby : 'u.display_name',
-            'order'      => isset( $order ) ? $order : 'DESC',
-            'search'     => isset( $search ) ? $search : false,
-            'year'       => isset( $year ) ? $year : 0,
-            'policy_id'  => isset( $policy_id ) ? $policy_id : 0
-        );
-
-        $items     = erp_hr_leave_get_entitlements( $args );
-        $response  = rest_ensure_response( $items['data'] );
-
-        return $response;
     }
 
     /**
