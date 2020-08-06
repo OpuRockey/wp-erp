@@ -7,6 +7,7 @@ use WP_REST_Response;
 use WP_Error;
 use WeDevs\ERP\API\REST_Controller;
 use WeDevs\ERP\HRM\Models\Financial_Year;
+use WeDevs\ERP\HRM\Models\Leave_Policy;
 
 class Leave_Entitlements_Controller extends REST_Controller {
     /**
@@ -40,9 +41,9 @@ class Leave_Entitlements_Controller extends REST_Controller {
                 'methods'             => WP_REST_Server::CREATABLE,
                 'callback'            => [ $this, 'create_entitlement' ],
                 'args'                => $this->get_endpoint_args_for_item_schema( WP_REST_Server::CREATABLE ),
-                'permission_callback' => function ( $request ) {
+                /*'permission_callback' => function ( $request ) {
                     return current_user_can( 'erp_leave_manage' );
-                },
+                },*/
             ],
             'schema' => [ $this, 'get_public_item_schema' ],
         ] );
@@ -142,18 +143,82 @@ class Leave_Entitlements_Controller extends REST_Controller {
      *
      * @return WP_Error|WP_REST_Request
      */
-    public function create_entitlement( $request ) {
-        $item = $this->prepare_item_for_database( $request );
-        $id   = erp_hr_leave_insert_entitlement( $item );
+    public function create_entitlement( \WP_REST_Request $request ) {
 
-        $entitlement = \WeDevs\ERP\HRM\Models\Leave_Entitlement::find( $id );
+        $department_id      = $request->get_param( 'department_id' );
+        $designation_id     = $request->get_param( 'designation_id' );
+        $location_id        = $request->get_param( 'location_id' );
+        $gender             = $request->get_param( 'gender' );
+        $marital            = $request->get_param( 'marital' );
+        $f_year             = $request->get_param( 'f_year' );
+        $leave_policy       = $request->get_param( 'leave_policy' );
+        $assignment_to      = $request->get_param( 'assignment_to' );
+        $single_employee    = $request->get_param( 'single_employee' );
+        $comment            = $request->get_param( 'comment' );
 
-        $request->set_param( 'context', 'edit' );
-        $response = $this->prepare_item_for_response( $entitlement, $request );
-        $response = rest_ensure_response( $response );
-        $response->set_status( 201 );
-        $response->header( 'Location', rest_url( sprintf( '/%s/%s/%d', $this->namespace, $this->rest_base, $id ) ) );
 
+        $department_id      = isset( $department_id ) ? intval( $department_id ) : '-1';
+        $designation_id     = isset( $designation_id ) ? intval( $designation_id ) : '-1';
+        $location_id        = isset( $location_id ) ? intval( $location_id ) : '-1';
+        $gender             = isset( $gender ) ? intval( $gender ) : '-1';
+        $marital            = isset( $marital ) ? intval( $marital ) : '-1';
+        $f_year             = isset( $f_year ) ? intval( $f_year ) : '';
+        $leave_policy       = isset( $leave_policy ) ? intval( $leave_policy ) : '';
+        $is_single          = ! isset( $assignment_to );
+        $single_employee    = isset( $single_employee ) ? intval( $single_employee ) : '-1';
+        $comment            = isset( $comment ) ? $comment : '-1';
+
+
+        $policy = Leave_Policy::find( $leave_policy );
+
+        // fetch employees if not single
+        $employees = array();
+
+        if ( ! $is_single ) {
+            $employees = erp_hr_get_employees( array(
+                'department'    => $policy->department_id,
+                'location'      => $policy->location_id,
+                'designation'   => $policy->designation_id,
+                'gender'        => $policy->gender,
+                'marital_status'    => $policy->marital,
+                'number'            => '-1',
+                'no_object'         => true,
+            ) );
+        } else {
+            $user              = get_user_by( 'id', $single_employee );
+            $emp               = new \stdClass();
+            $emp->user_id      = $user->ID;
+            $emp->display_name = $user->display_name;
+
+            $employees[] = $emp;
+        }
+
+        $affected = 0;
+        foreach ( $employees as $employee ) {
+            // get required data and send it to insert_entitlement function
+            $data = array(
+                'user_id'       => $employee->user_id,
+                'leave_id'      => $policy->leave_id,
+                'created_by'    => get_current_user_id(),
+                'trn_id'        => $policy->id,
+                'trn_type'      => 'leave_policies',
+                'day_in'        => $policy->days,
+                'day_out'       => 0,
+                'description'   => $comment,
+                'f_year'        => $policy->f_year,
+            );
+
+            $inserted = erp_hr_leave_insert_entitlement( $data );
+
+            if ( ! is_wp_error( $inserted ) ) {
+                $affected += 1;
+            }
+            else {
+                //
+            }
+        }
+
+        $response = rest_ensure_response( $affected );
         return $response;
     }
 
@@ -289,62 +354,4 @@ class Leave_Entitlements_Controller extends REST_Controller {
         return $response;
     }
 
-    /**
-     * Get the User's schema, conforming to JSON Schema
-     *
-     * @return array
-     */
-    public function get_item_schema() {
-        $schema = [
-            '$schema'    => 'http://json-schema.org/draft-04/schema#',
-            'title'      => 'policy',
-            'type'       => 'object',
-            'properties' => [
-                'id'          => [
-                    'description' => __( 'Unique identifier for the resource.' ),
-                    'type'        => 'integer',
-                    'context'     => [ 'embed', 'view', 'edit' ],
-                    'readonly'    => true,
-                ],
-                'employee_id'          => [
-                    'description' => __( 'Employee id for the resource.' ),
-                    'type'        => 'integer',
-                    'context'     => [ 'embed', 'view', 'edit' ],
-                    'required'    => true,
-                ],
-                'policy'          => [
-                    'description' => __( 'Policy for the resource.' ),
-                    'type'        => 'integer',
-                    'context'     => [ 'embed', 'view', 'edit' ],
-                    'required'    => true,
-                ],
-                'days'            => [
-                    'description' => __( 'Days for the resource.' ),
-                    'type'        => 'integer',
-                    'context'     => [ 'embed', 'view', 'edit' ],
-                    'required'    => true,
-                ],
-                'start_date'      => [
-                    'description' => __( 'Start date for the resource.' ),
-                    'type'        => 'string',
-                    'context'     => [ 'edit' ],
-                    'arg_options' => [
-                        'sanitize_callback' => 'sanitize_text_field',
-                    ],
-                    'required'    => true,
-                ],
-                'end_date'        => [
-                    'description' => __( 'End date for the resource.' ),
-                    'type'        => 'string',
-                    'context'     => [ 'edit' ],
-                    'arg_options' => [
-                        'sanitize_callback' => 'sanitize_text_field',
-                    ],
-                    'required'    => true,
-                ],
-            ],
-        ];
-
-        return $schema;
-    }
 }
