@@ -48,9 +48,9 @@ class Leave_Policies_Controller extends REST_Controller {
                 'methods'             => WP_REST_Server::READABLE,
                 'callback'            => [ $this, 'get_policies' ],
                 'args'                => $this->get_collection_params(),
-                'permission_callback' => function ( $request ) {
+                /*'permission_callback' => function ( $request ) {
                     return current_user_can( 'erp_leave_manage' );
-                },
+                },*/
             ],
             [
                 'methods'             => WP_REST_Server::CREATABLE,
@@ -100,14 +100,32 @@ class Leave_Policies_Controller extends REST_Controller {
      *
      * @return WP_Error|WP_REST_Response
      */
-    public function get_policies( $request ) {
-        $args = [
-            'number' => $request['per_page'],
-            'offset' => ( $request['per_page'] * ( $request['page'] - 1 ) ),
-        ];
+    public function get_policies( \WP_REST_Request $request ) {
+
+        $per_page       = $request->get_param( 'per_page' );
+        $page           = $request->get_param( 'page' );
+        $status         = $request->get_param( 'status' );
+        $filter_year    = $request->get_param( 'filter_year' );
+        $orderby        = $request->get_param( 'orderby' );
+        $order          = $request->get_param( 'order' );
+        $search         = $request->get_param( 's' );
+
+
+        // only ncessary because we have sample data
+        $current_f_year = erp_hr_get_financial_year_from_date();
+        $f_year = null !== $current_f_year ? $current_f_year->id : '';
+        $args = array(
+            'offset' => ( $per_page * ( $page - 1 ) ),
+            'number' => $per_page,
+            'f_year'  => isset( $filter_year ) ? $filter_year : $f_year,
+            'orderby' => isset( $orderby ) ? $orderby : 'created_at',
+            'order'   => isset( $order ) ? $order : 'DESC'
+        );
 
         $items       = erp_hr_leave_get_policies( $args );
-        $total_items = erp_hr_count_leave_policies();
+
+        return $items;
+        /*$total_items = erp_hr_count_leave_policies();
 
         $formated_items = [];
         foreach ( $items as $item ) {
@@ -118,7 +136,7 @@ class Leave_Policies_Controller extends REST_Controller {
         $response = rest_ensure_response( $formated_items );
         $response = $this->format_collection_response( $response, $request, $total_items );
 
-        return $response;
+        return $response;*/
     }
 
     /**
@@ -335,51 +353,5 @@ class Leave_Policies_Controller extends REST_Controller {
         $response = $this->add_links( $response, $item );
 
         return $response;
-    }
-
-    /**
-     * Get the User's schema, conforming to JSON Schema
-     *
-     * @return array
-     */
-    public function get_item_schema() {
-        $schema = [
-            '$schema'    => 'http://json-schema.org/draft-04/schema#',
-            'title'      => 'policy',
-            'type'       => 'object',
-            'properties' => [
-                'id'          => [
-                    'description' => __( 'Unique identifier for the resource.' ),
-                    'type'        => 'integer',
-                    'context'     => [ 'embed', 'view', 'edit' ],
-                    'readonly'    => true,
-                ],
-                'name'        => [
-                    'description' => __( 'Name for the resource.' ),
-                    'type'        => 'string',
-                    'context'     => [ 'edit' ],
-                    'arg_options' => [
-                        'sanitize_callback' => 'sanitize_text_field',
-                    ],
-                    'required'    => true,
-                ],
-                'days'        => [
-                    'description' => __( 'Days for the resource.' ),
-                    'type'        => 'integer',
-                    'context'     => [ 'embed', 'view', 'edit' ],
-                    'required'    => true,
-                ],
-                'color'       => [
-                    'description' => __( 'Color for the resource.' ),
-                    'type'        => 'string',
-                    'context'     => [ 'edit' ],
-                    'arg_options' => [
-                        'sanitize_callback' => 'sanitize_text_field',
-                    ],
-                ],
-            ],
-        ];
-
-        return $schema;
     }
 }
