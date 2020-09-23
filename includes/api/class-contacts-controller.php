@@ -31,9 +31,9 @@ class Contacts_Controller extends REST_Controller {
                 'methods'             => WP_REST_Server::READABLE,
                 'callback'            => [ $this, 'get_contacts' ],
                 'args'                => $this->get_collection_params(),
-                'permission_callback' => function ( $request ) {
+                /*'permission_callback' => function ( $request ) {
                     return current_user_can( 'erp_crm_list_contact' );
-                },
+                },*/
             ],
             [
                 'methods'             => WP_REST_Server::CREATABLE,
@@ -100,8 +100,51 @@ class Contacts_Controller extends REST_Controller {
             'offset' => ( $request['per_page'] * ( $request['page'] - 1 ) ),
         ];
 
-        $items       = erp_get_peoples( $args );
-        $total_items = erp_get_peoples( [ 'count' => true ] );
+        if ( isset( $request['type'] ) && ! empty( $request['type'] ) ) {
+            $args['type'] = $request['type'];
+        }
+
+        if ( isset( $request['s'] ) && ! empty( $request['s'] ) ) {
+            $args['s'] = $request['s'];
+        }
+
+        if ( isset( $request['orderby'] ) && ! empty( $request['orderby'] ) && isset( $request['order'] ) && ! empty( $request['order'] ) ) {
+            $args['orderby'] = $request['orderby'];
+            $args['order'] = $request['order'];
+        }
+
+        // Filter for customer life stage
+        if ( isset( $request['status'] ) && ! empty( $request['status'] ) ) {
+            if ( $request['status'] != 'all' ) {
+                if ( $request['status'] == 'trash' ) {
+                    $args['trashed'] = true;
+                } else {
+                    $args['life_stage'] = $request['status'];
+                }
+            }
+        }
+        
+        if ( isset( $request['filter_assign_contact'] ) && ! empty( $request['filter_assign_contact'] ) ) {
+            $args['contact_owner'] = $request['filter_assign_contact'];
+        }
+
+        if ( isset( $request['erpadvancefilter'] ) && ! empty( $request['erpadvancefilter'] ) ) {
+            $args['erpadvancefilter'] = $request['erpadvancefilter'];
+        }
+
+
+        if ( isset( $request['filter_contact_company'] ) && ! empty( $request['filter_contact_company'] ) ) {
+            $companies = erp_crm_company_get_customers( [ 'id' => $request['filter_contact_company'] ] );
+
+            foreach ( $companies as $company ) {
+                $items[] = $company['contact_details'];
+            }
+
+            $total_items = count( $items );
+        } else {
+            $items       = erp_get_peoples( $args );
+            $total_items = erp_get_peoples( [ 'count' => true ] );
+        }
 
         $formated_items = [];
 
@@ -375,7 +418,7 @@ class Contacts_Controller extends REST_Controller {
      * @return WP_REST_Response $response response data
      */
     public function prepare_item_for_response( $item, $request, $additional_fields = [] ) {
-        wp_send_json( $item );
+
         $data = [
             'id'            => (int) $item->id,
             'first_name'    => $item->first_name,
