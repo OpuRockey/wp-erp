@@ -112,6 +112,21 @@ class Contacts_Groups_Controller extends REST_Controller {
             'offset' => ( $request['per_page'] * ( $request['page'] - 1 ) ),
         ];
 
+        // Filter for order by
+        if ( isset( $request['orderby'] ) && ! empty( $request['orderby'] ) ) {
+            $args['orderby'] = $request['orderby'];
+        }
+
+        // Filter for order
+        if ( isset( $request['order'] ) && !empty( $request['order'] ) ) {
+            $args['order'] = $request['order'];
+        }
+
+        // Filter for search
+        if ( isset( $request['s'] ) && !empty( $request['s'] ) ) {
+            $args['s'] = $request['s'];
+        }
+
         $items       = erp_crm_get_contact_groups( $args );
         $total_items = erp_crm_get_contact_groups( [ 'count' => true ] );
 
