@@ -344,6 +344,9 @@ class Contacts_Groups_Controller extends REST_Controller {
             'id'          => (int) $item->id,
             'name'        => $item->name,
             'description' => $item->description,
+            'private'     => $item->private,
+            'created_at'  => $item->created_at,
+            'updated_at'  => $item->updated_at,
         ];
 
         // Wrap the data in a response object
