@@ -31,9 +31,9 @@ class Contacts_Controller extends REST_Controller {
                 'methods'             => WP_REST_Server::READABLE,
                 'callback'            => [ $this, 'get_contacts' ],
                 'args'                => $this->get_collection_params(),
-                /*'permission_callback' => function ( $request ) {
+                'permission_callback' => function ( $request ) {
                     return current_user_can( 'erp_crm_list_contact' );
-                },*/
+                },
             ],
             [
                 'methods'             => WP_REST_Server::CREATABLE,
@@ -123,7 +123,7 @@ class Contacts_Controller extends REST_Controller {
                 }
             }
         }
-        
+
         if ( isset( $request['filter_assign_contact'] ) && ! empty( $request['filter_assign_contact'] ) ) {
             $args['contact_owner'] = $request['filter_assign_contact'];
         }
