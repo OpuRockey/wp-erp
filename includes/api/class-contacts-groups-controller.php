@@ -188,7 +188,7 @@ class Contacts_Groups_Controller extends REST_Controller {
      *
      * @param WP_REST_Request $request
      *
-     * @return WP_Error|WP_REST_Request
+     * @return WP_Error|WP_REST_Response
      */
     public function update_group( $request ) {
         $data = [
@@ -199,7 +199,7 @@ class Contacts_Groups_Controller extends REST_Controller {
 
         $group = erp_crm_save_contact_group( $data );
 
-        return new WP_REST_Response( $group_id, 201 );
+        return new WP_REST_Response( $group, 201 );
     }
 
     /**
@@ -207,7 +207,7 @@ class Contacts_Groups_Controller extends REST_Controller {
      *
      * @param WP_REST_Request $request
      *
-     * @return WP_Error|WP_REST_Request
+     * @return WP_Error|WP_REST_Response
      */
     public function delete_group( $request ) {
         $group_id = (int) $request['id'];
@@ -222,7 +222,7 @@ class Contacts_Groups_Controller extends REST_Controller {
      *
      * @param WP_REST_Request $request
      *
-     * @return WP_Error|WP_REST_Response
+     * @return WP_Error|WP_REST_Response|mixed
      */
     public function get_subscribed_contacts( $request ) {
         $args = [
