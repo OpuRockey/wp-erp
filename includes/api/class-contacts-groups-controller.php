@@ -267,7 +267,7 @@ class Contacts_Groups_Controller extends REST_Controller {
      *
      * @param WP_REST_Request $request
      *
-     * @return WP_Error|WP_REST_Request
+     * @return WP_Error|WP_REST_Response
      */
     public function subscribe_contact( $request ) {
         if ( ! isset( $request['contact_ids'] ) || empty( $request['contact_ids'] ) ) {
@@ -293,9 +293,18 @@ class Contacts_Groups_Controller extends REST_Controller {
      *
      * @param WP_REST_Request $request
      *
-     * @return WP_Error|WP_REST_Request
+     * @return WP_Error|WP_REST_Response
      */
     public function delete_subscribed_contact( $request ) {
+
+        if ( ! isset( $request['contact_id'] ) || empty( $request['contact_id'] ) ) {
+            return new WP_Error( 'rest_group_invalid_contact_ids', __( 'Required contact id.' ), [ 'status' => 400 ] );
+        }
+
+        if ( ! isset( $request['group_id'] ) || empty( $request['group_id'] ) ) {
+            return new WP_Error( 'rest_group_invalid_contact_ids', __( 'Required group_id id.' ), [ 'status' => 400 ] );
+        }
+
         $contact_id = intval( $request['contact_id'] );
         $group_id   = intval( $request['group_id'] );
 
