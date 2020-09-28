@@ -23,6 +23,8 @@ class Activities_Controller extends REST_Controller {
      */
     protected $rest_base = 'crm/activities';
 
+    public $activity_types;
+
     public function __construct() {
         $this->activity_types = [
             'note'     => 'new_note',
@@ -96,9 +98,10 @@ class Activities_Controller extends REST_Controller {
      */
     public function get_activities( $request ) {
         $args = [
-            'type'   => $this->activity_types[ $request['type'] ],
-            'limit'  => $request['per_page'],
-            'offset' => ( $request['per_page'] * ( $request['page'] - 1 ) ),
+            'customer_id'   => ( isset( $request['customer_id'] ) && ! empty( $request['customer_id'] ) ) ? $request['customer_id'] : '',
+            'type'          => $this->activity_types[ $request['type'] ],
+            'limit'         => $request['per_page'],
+            'offset'        => ( $request['per_page'] * ( $request['page'] - 1 ) ),
         ];
 
         $items = erp_crm_get_feed_activity( $args );
@@ -487,7 +490,6 @@ class Activities_Controller extends REST_Controller {
             'type'                   => [
                 'description'        => __( 'The type of activities.' ),
                 'type'               => 'string',
-                'default'            => 'log',
             ],
             'page'                   => [
                 'description'        => __( 'Current page of the collection.' ),
