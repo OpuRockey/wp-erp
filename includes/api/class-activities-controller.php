@@ -94,7 +94,7 @@ class Activities_Controller extends REST_Controller {
      *
      * @param WP_REST_Request $request
      *
-     * @return WP_Error|WP_REST_Response
+     * @return WP_Error|WP_REST_Response|mixed
      */
     public function get_activities( $request ) {
         $args = [
@@ -146,7 +146,7 @@ class Activities_Controller extends REST_Controller {
      *
      * @param WP_REST_Request $request
      *
-     * @return WP_Error|WP_REST_Request
+     * @return WP_Error|WP_REST_Request|mixed
      */
     public function create_activity( $request ) {
         $item = $this->prepare_item_for_database( $request );
@@ -235,7 +235,7 @@ class Activities_Controller extends REST_Controller {
      *
      * @param WP_REST_Request $request
      *
-     * @return WP_Error|WP_REST_Request
+     * @return WP_Error|WP_REST_Response
      */
     public function update_activity( $request ) {
         return new WP_REST_Response( true, 201 );
