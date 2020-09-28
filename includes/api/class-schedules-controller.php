@@ -68,7 +68,7 @@ class Schedules_Controller extends REST_Controller {
      *
      * @param WP_REST_Request $request
      *
-     * @return WP_Error|WP_REST_Response
+     * @return WP_Error|WP_REST_Response|mixed
      */
     public function get_schedules( $request ) {
         $args = [
@@ -101,7 +101,7 @@ class Schedules_Controller extends REST_Controller {
      *
      * @param WP_REST_Request $request
      *
-     * @return WP_Error|WP_REST_Response
+     * @return WP_Error|WP_REST_Response|mixed
      */
     public function get_todays_schedules( $request ) {
         $items       = erp_crm_get_todays_schedules_activity( 1 );
@@ -128,7 +128,7 @@ class Schedules_Controller extends REST_Controller {
      *
      * @param WP_REST_Request $request
      *
-     * @return WP_Error|WP_REST_Response
+     * @return WP_Error|WP_REST_Response|mixed
      */
     public function get_upcoming_schedules( $request ) {
         $items = erp_crm_get_next_seven_day_schedules_activities( 1 );
